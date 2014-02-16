@@ -1,0 +1,61 @@
+<!doctype html>
+<html>
+  <head>
+    <title>Context Widgets</title>
+    <style>
+      body {
+        min-width: 357px;
+        overflow-x: hidden;
+      }
+      #widgets_list { 
+        list-style-type: none; 
+        margin: 0; 
+        padding: 0; 
+        width: 90%; 
+      }
+
+      #widgets_list li { 
+        margin: 0 3px 3px 3px; 
+        padding: 0.4em; 
+        padding-left: 1.5em; 
+        width: 100%;
+        height: 24px;
+        overflow-x: hidden;
+      }
+      
+      .widget_delete_button {
+        height: 18px  !important;
+        width: 18px !important;
+        float: right;
+      }
+
+      /*
+#sortable li span { position: absolute; margin-left: -1.3em; }
+      img {
+        margin: 5px;
+        border: 2px solid black;
+        vertical-align: middle;
+        width: 75px;
+        height: 75px;
+      }
+      */
+    </style>
+
+
+    <link rel="stylesheet" href="jquery-ui-1.10.4.custom.min.css">
+    <!--
+      - JavaScript and HTML must be in separate files: see our Content Security
+      - Policy documentation[1] for details and explanation.
+      -
+      - [1]: http://developer.chrome.com/extensions/contentSecurityPolicy.html
+     -->
+    <script src="jquery-2.1.0.min.js"></script>
+    <script src="jquery-ui-1.10.4.custom.min.js"></script>
+    <script src="popup.js"></script>
+  </head>
+  <body>
+    <div id="content_area">
+    </div>
+  </body>
+</html>
+
