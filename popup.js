@@ -1,15 +1,49 @@
 
-
 var context_widgets = {
+
+    current_view: "#widget_view",
 
     get_domain: function (url) {
         return url.replace('http://','').replace('https://','').split("/")[0]; ///[/?#]/)[0];
     },
+
+    transit_view: function (next) {
+        if (context_widgets.current_view === next) return;
+        
+        $(next).css({"z-index": -1})
+        $(next).show();
+        var opts = {};
+        var prev = context_widgets.current_view;
+        $(context_widgets.current_view).effect("fade", opts, 200, function() {
+            $(prev).hide();
+            $(next).css({"z-index": 0});
+        });
+        context_widgets.current_view = next;
+    },
+
     get_uuid: function() {
         var S4 = function() {
             return (((1+Math.random())*0x10000)|0).toString(16).substring(1);
         }   
         return (S4()+S4()+"-"+S4()+"-"+S4()+"-"+S4()+"-"+S4()+S4() +S4());
+    },
+
+    add_widget: function(store, key, new_widget, callback) {
+        store.get('widgets', function(o) {
+            var keys = [];
+            if ('widgets' in o) {
+                keys = o.widgets;
+            }
+            keys.push(key);
+            store.set({widgets: keys}, function() {
+                
+                var update = {};
+                update[key] = new_widget;
+                store.set(update, function() {
+                    callback();
+                });
+            });
+        });
     },
 
     add_link: function() {
@@ -20,11 +54,11 @@ var context_widgets = {
             var title = tab.title;
             var domain = context_widgets.get_domain(url);
 
-            $("#content_area").html('<form><label for="cond">Condition:</label> <input type="text" name="cond" id="cond_field"/><br/> <label for="title">Title:</label> <input type="text" name="title" id="title_field"/>  <br/> <label for="link">URL:</label> <input type="text" name="link" id="link_field"/> <a href="" id="add">Add</a></form>');
             $('#cond_field')[0].value = domain;
             $('#link_field')[0].value = url;
             $('#title_field')[0].value = title;
             $("#add").button().click(function (ev) {
+                ev.preventDefault();
                 var uuid = context_widgets.get_uuid();
                 var new_widget = {
                     'uuid': uuid,
@@ -36,30 +70,20 @@ var context_widgets = {
                 };
                 key = "widget_" + uuid;
                 try {
-                    var update = {};
-                    update[key] = new_widget;
-                    chrome.storage.sync.set(update, function() {
-                        //alert("Widget saved");
-                    } );
-                    chrome.storage.sync.get('widgets', function(o) {
-                        var keys = [];
-                        if ('widgets' in o) keys = o['widgets'];
-                        keys.push(key);
-                        chrome.storage.sync.set({'widgets': keys}, function() {
-                            //alert("Keys saved");
-                        });
+                    context_widgets.add_widget(chrome.storage.sync, key, new_widget, function() {
                         context_widgets.show_widgets();
                     });                
                 } catch(err) {
-                    alert(err);
+                    console.log(err);
                     throw err;
                 }
             });
+            context_widgets.transit_view("#add_link_form");
         });
     },
 
     render_html: function(widget) {
-        return '<a href="' + widget.link_href + '">' + widget.title + '</a>'
+        return '<span class="ui-icon ui-icon-bookmark" style="float:left; margin-left:10px; margin-right:10px;"></span> <a href="' + widget.link_href + '" class="widget_link">' + widget.title + '</a>'
     },
 
     check_condition: function(tab, widget) {
@@ -79,11 +103,22 @@ var context_widgets = {
                 return ret;
             });
             chrome.storage.sync.set({'widgets': newkeys}, function() {
-                chrome.storage.sync.remove(delkey, function() { });
-                callback();
+                chrome.storage.sync.remove(delkey, function() { 
+                    callback();
+                });
             });
         });
     },
+
+    open_link: function(url) {
+        chrome.tabs.query({"active": true}, function (tabs) {
+            var tab = tabs[0];
+            chrome.tabs.update(tab.id, {url: url}, function () {
+            });
+        });
+    },
+
+
 
     show_widgets: function() {
         chrome.tabs.query({"active": true}, function (tabs) {
@@ -92,22 +127,32 @@ var context_widgets = {
                 var keys = []
                 if ('widgets' in o1) keys = o1['widgets'];
                 chrome.storage.sync.get(keys, function (o2) {
-                    var html = '<ul id="widgets_list">';
+                    var html = '';
                     for (var i = 0; i < keys.length; ++ i) {
                         var widget = o2[keys[i]];
                         if (! context_widgets.check_condition(tab,widget)) 
                             continue;
-                        html += '<li class="ui-state-default">' + context_widgets.render_html(widget);
+                        html += '<li class="ui-state-default">';
+                        html += context_widgets.render_html(widget);
                         html += '<a href="" class="widget_delete_button" data-widget-id="' + widget.uuid + '"></a>';
                         html += "</li>";
                     }
-                    html += "</ul>"
-                    $("#content_area").html(html + '<a id="add_link">Add Link</a>');
+                    $("#widget_list").html(html + '');
+
+                    context_widgets.transit_view("#widget_view");
+
+                    $(".widget_link").click(function(ev) {
+                        ev.preventDefault();
+                        console.log(this.href);
+                        context_widgets.open_link(this.href);
+                    });
+
                     $(".widget_delete_button")
                         .button({class: "delete_button", 
                                  text: false,
                                  icons: {primary: "ui-icon-close"}})
                         .click(function (ev) {
+                            ev.preventDefault();
                             //alert($(this).data("widgetId"));
                             var wid = $(this).data("widgetId");
                             context_widgets.delete_widget(wid, function() {
@@ -115,9 +160,10 @@ var context_widgets = {
                             });
                         });
                     
-                    $("#widgets_list").sortable();
-                    $("#widgets_list").disableSelection();
+                    $("#widget_list").sortable();
+                    $("#widget_list").disableSelection();
                     $("#add_link").button().click(function (ev) {
+                        ev.preventDefault();
                         context_widgets.add_link();
                     });
                 });
