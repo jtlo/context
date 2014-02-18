@@ -36,15 +36,60 @@
       }
 
       #widget_list li { 
+        display: block;
         margin: 0;
         padding-top: 0.4em; 
         padding-bottom: 0.4em; 
         width: 100%;
-        height: 24px;
-        overflow-x: hidden;
+        min-height: 24px;
         border-width: 1px 0px 1px 0px;
       }
+
+      .RP_widget_body {
+        padding-left:20px;
+      }
+
+      .widget_body {
+        height: 100%;
+        float: left;
+        width: 90%;
+      }
+
+      #add_link_form {
+        padding: 10px;
+      }
+
+      .URL_field {
+        width: 90%;
+        display: block;
+      }
+
+      .title_field {
+        width: 90%;
+        display: block;
+      }
       
+      .link_widget_body {
+        overflow: hidden;
+        text-overflow:ellipsis;
+        white-space: nowrap;
+        height: 24px;
+      }
+
+      .rp_header {
+        font-weight: bold;
+        color: black;
+      }
+
+      #widget_list li:before, #widget_list li:after {
+         content: " "; 
+         display: table; 
+      }
+
+      #widget_list li:after {
+         clear: both;
+      }      
+
       .widget_delete_button {
         height: 18px  !important;
         width: 18px !important;
@@ -52,16 +97,6 @@
         margin-right: 10px;
       }
 
-      /*
-#sortable li span { position: absolute; margin-left: -1.3em; }
-      img {
-        margin: 5px;
-        border: 2px solid black;
-        vertical-align: middle;
-        width: 75px;
-        height: 75px;
-      }
-      */
     </style>
 
 
@@ -76,25 +111,56 @@
     <script src="popup.js"></script>
   </head>
   <body>
+
     <div id="content_area">
       <div id="widget_view" class="view">
         <ul id="widget_list">
         </ul>
         <div id="buttons" style="text-align:center;">
           <a id="add_link">Add Link</a>
+          <a id="add_recent_page">Add Recent Pages</a>
         </div>
       </div>
+
       <div id="add_link_form" class="view" style="display: none;" >
         <form>
-          <label for="cond">Condition:</label> 
-          <input type="text" name="cond" id="cond_field"/><br/> 
+          <h3>Add link widget</h3>
+
+          <label for="cond">Appears when URL contains:</label> 
+          <input type="text" name="cond" id="cond_field" class="URL_field"/>
+
+          <div style="height:15px;"></div>
+          
           <label for="title">Title:</label> 
-          <input type="text" name="title" id="title_field"/><br/> 
+          <input type="text" name="title" id="title_field" class="title_field"/>
           <label for="link">URL:</label>
-          <input type="text" name="link" id="link_field"/>
+          <input type="text" name="link" id="link_field"  class="URL_field"/>
+
+          <div style="height:15px;"></div>
+
           <a href="" id="add">Add</a>
         </form>
       </div>
+
+      <div id="add_recent_pages_form" class="view" style="display:none">
+          <h3>Add "Recent Pages" widget</h3>
+
+          <label for="rp_cond">Appears when URL contains:</label> 
+          <input type="text" name="rp_cond" id="rp_cond_field" class="URL_field"/>
+
+          <div style="height:15px;"></div>
+
+          <label for="rp_key">Search key:</label> 
+          <input type="text" name="rp_key" id="rp_key_field" class="URL_field"/>
+
+          <label for="rp_num">Num of links to be shown:</label> 
+          <input type="text" name="rp_num" id="rp_num_field" class="title_field"/>
+
+          <div style="height:15px;"></div>
+
+          <a href="" id="rp_add">Add</a>        
+      </div>
+
     </div>
   </body>
 </html>
